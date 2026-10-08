@@ -1,0 +1,5 @@
+shots/
+site/data/
+cache
+cache/
+__pycache__/

@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow, noarchive">
+<meta name="theme-color" content="#13294b">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="House prices">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>House prices – sold prices near you (England &amp; Wales)</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="icon" href="favicon.png">
+<style>
+:root{--bg:#f4f5f7;--card:#fff;--ink:#1d2330;--mute:#636b7a;--line:#e2e5ea;--acc:#0b5cad;--navy:#13294b;--good:#2f7d32;--bad:#b42318;--warn:#8a5a00;--warnbg:#fff4e5;--reg:#c25e00;--ew:#8a93a3}
+*{box-sizing:border-box}[hidden]{display:none!important}
+body{margin:0;font:15px/1.45 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;background:var(--bg);color:var(--ink)}
+header{background:var(--navy);color:#fff;padding:12px 16px;padding-top:max(12px,env(safe-area-inset-top))}
+header h1{margin:0;font-size:20px}header p{margin:3px 0 0;font-size:13px;opacity:.85}
+main{max-width:1100px;margin:0 auto;padding:12px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px 14px;margin-bottom:12px}
+h2{font-size:16px;margin:0 0 8px}
+button{font:inherit;border:1px solid #c5cbd5;background:#fff;color:var(--ink);border-radius:8px;padding:8px 12px;cursor:pointer;min-height:44px}
+button.on{background:var(--acc);border-color:var(--acc);color:#fff}
+input[type=text]{font:inherit;font-size:16px;padding:8px 10px;border:1px solid #c5cbd5;border-radius:8px;min-width:0;min-height:44px;background:#fff}
+#nearBtn{width:100%;min-height:58px;font-size:19px;font-weight:700;background:var(--acc);color:#fff;border:0}
+.row{display:flex;gap:8px;margin-top:8px;align-items:center}.row input{flex:1}
+.seg{display:flex;gap:6px;flex-wrap:wrap}.seg button{min-height:38px;padding:5px 11px;font-size:14px}
+.note{font-size:13px;color:var(--mute)}.err{color:var(--bad)}
+.warnbox{background:var(--warnbg);color:var(--warn);border-radius:8px;padding:8px 10px;font-size:13.5px;margin-top:8px}
+#placeLine{margin-top:10px;font-size:14px}#placeLine a{color:var(--acc);margin-left:6px}
+.grid{display:grid;grid-template-columns:1fr;gap:12px}.grid>*{min-width:0}
+@media(min-width:900px){.grid{grid-template-columns:1fr 1fr}.grid .card{margin-bottom:0}}
+.big{display:flex;gap:16px;flex-wrap:wrap;align-items:flex-end;margin:4px 0 8px}
+.big div b{display:block;font-size:26px;line-height:1.1}
+.big div span{font-size:13px;color:var(--mute)}
+table{width:100%;border-collapse:collapse;font-size:14px}
+th,td{text-align:right;padding:5px 4px;border-top:1px solid var(--line)}
+th{font-size:12.5px;color:var(--mute);font-weight:600;border-top:0}
+th:first-child,td:first-child{text-align:left}
+td small{color:var(--mute)}
+.chg{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:6px 0 10px}
+.chg div{border:1px solid var(--line);border-radius:10px;padding:8px;text-align:center}
+.chg b{display:block;font-size:20px}.chg span{font-size:12px;color:var(--mute)}
+.up{color:var(--good)}.down{color:var(--bad)}
+#chart svg{width:100%;height:auto;display:block}
+.legend{font-size:12.5px;color:var(--mute);display:flex;gap:12px;flex-wrap:wrap;margin-top:4px}
+.legend i{display:inline-block;width:14px;height:3px;vertical-align:middle;margin-right:4px}
+.bar{display:grid;grid-template-columns:minmax(0,9.5em) 1fr auto;gap:8px;align-items:center;font-size:14px;margin:6px 0}
+.bar .lab{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.bar .trk{background:#eef1f5;border-radius:6px;height:14px;overflow:hidden}
+.bar .fill{height:100%;background:var(--acc);border-radius:6px}
+.bar.me .fill{background:var(--navy)}.bar.me .lab{font-weight:700}
+.sale{border-top:1px solid var(--line);padding:10px 0;display:flex;gap:10px}
+.sale:first-child{border-top:0}
+.sale .l{flex:1;min-width:0}
+.sale .addr{font-weight:600;overflow-wrap:anywhere}
+.sale .meta{font-size:13px;color:var(--mute)}
+.sale .r{text-align:right;white-space:nowrap}
+.sale .r b{font-size:18px;display:block}
+.tag{display:inline-block;font-size:12px;border:1px solid var(--line);border-radius:10px;padding:0 7px;margin:3px 4px 0 0;color:#3b4250;background:#f7f8fa}
+.tag.new{border-color:#b7dfb9;background:#eef8ef;color:#1e5e22}
+.tag.lh{border-color:#f0d3a8;background:#fff8ee;color:#7a4b00}
+.tag.b{border-color:#e6c3c3;background:#fdf1f1;color:#8a1f1f}
+.tag.st{border-color:#bcd3f0;background:#eef4fc;color:#0b4a8f}
+.more{width:100%;margin-top:8px}
+footer{max-width:1100px;margin:0 auto;padding:0 12px 30px;font-size:12.5px;color:var(--mute)}
+footer a{color:var(--mute)}
+a{color:var(--acc)}
+</style>
+</head>
+<body>
+<header>
+  <h1>House prices</h1>
+  <p>Sold prices in England &amp; Wales from HM Land Registry – sales near you, area averages and trends.</p>
+</header>
+<main>
+  <section class="card">
+    <button id="nearBtn" type="button">📍 Near me</button>
+    <div class="row"><input id="placeInput" type="text" placeholder="Postcode, street or town, e.g. WN8 7AA" autocomplete="off" enterkeyhint="search" aria-label="Postcode, street or town"><button id="placeGo" type="button">Search</button></div>
+    <div id="placeLine" class="note">Loading…</div>
+    <div id="fresh" class="note" style="margin-top:6px"></div>
+  </section>
+
+  <div id="results" hidden>
+    <section class="card" id="areaCard">
+      <h2 id="areaTitle"></h2>
+      <div class="big" id="areaBig"></div>
+      <table id="typeTable"></table>
+      <p class="note" id="areaNote"></p>
+    </section>
+
+    <div class="grid">
+      <section class="card" id="trendCard">
+        <h2>Price trend</h2>
+        <div class="seg" id="typeBtns" role="group" aria-label="Property type"></div>
+        <div class="chg" id="chg"></div>
+        <div class="seg" id="rangeBtns" role="group" aria-label="Chart range"></div>
+        <div id="chart"></div>
+        <div class="legend" id="legend"></div>
+        <p class="note" id="trendNote"></p>
+      </section>
+      <section class="card" id="cmpCard">
+        <h2>How it compares</h2>
+        <p class="note" id="cmpLead" style="margin-top:0"></p>
+        <div id="bars"></div>
+        <p class="note" id="cmpText"></p>
+        <div id="hpiBox" class="note"></div>
+      </section>
+    </div>
+
+    <section class="card" id="salesCard" style="margin-top:12px">
+      <h2 id="salesTitle">Recent sales nearby</h2>
+      <div class="seg" id="radBtns" role="group" aria-label="Distance"></div>
+      <div class="seg" id="sortBtns" role="group" aria-label="Sort" style="margin-top:6px"></div>
+      <div class="seg" id="sTypeBtns" role="group" aria-label="Type filter" style="margin-top:6px"></div>
+      <p class="note" id="salesSum"></p>
+      <div id="sales"></div>
+      <button id="moreSales" class="more" type="button" hidden>Show more</button>
+    </section>
+  </div>
+
+  <section class="card">
+    <h2>About the data</h2>
+    <ul class="note" id="about" style="padding-left:18px;margin:0">
+      <li><b>Sold prices</b> come from HM Land Registry's Price Paid Data for <b>England and Wales</b>, published monthly. Area figures use standard sales only (category A). Repossessions, buy-to-let and company sales (category B) appear in the sales list with a tag.</li>
+      <li><b>Not covered:</b> Scotland and Northern Ireland. Their sold prices aren't published as open data (Registers of Scotland charges for it, and Northern Ireland has no open equivalent). The UK House Price Index averages below do include them.</li>
+      <li>Sales take weeks or months to be registered, so the newest month or two are incomplete. Area figures therefore use the 12 months to the last complete month.</li>
+      <li>"Typical price" is the median: half of sales were above it and half below. Small areas with few sales can swing a lot from year to year.</li>
+      <li>Some sales aren't in the data, such as Right to Buy discounts, gifts and transfers not at market value. A very small number of individual sales are left out of the list here, but they still count in the averages.</li>
+    </ul>
+  </section>
+</main>
+<footer>
+  <p>Contains HM Land Registry data © Crown copyright and database right 2026, licensed under the <a href="https://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/" rel="noopener">Open Government Licence v3.0</a>. UK House Price Index: HM Land Registry / ONS (OGL). Postcode locations: OS Code-Point Open – contains OS data © Crown copyright and database right 2026; Royal Mail data © Royal Mail copyright and database right 2026; National Statistics data © Crown copyright 2026. Postcode and place lookup: <a href="https://postcodes.io/" rel="noopener">postcodes.io</a>. Street search: <a href="https://nominatim.openstreetmap.org/" rel="noopener">Nominatim</a>, © <a href="https://www.openstreetmap.org/copyright" rel="noopener">OpenStreetMap</a> contributors.</p>
+  <p id="builtLine"></p>
+</footer>
+<script>
+"use strict";
+const $ = id => document.getElementById(id);
+const esc = s => String(s == null ? "" : s).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const gbp = n => n == null ? "–" : "£" + Math.round(n).toLocaleString("en-GB");
+const gbpK = n => n == null ? "–" : n >= 1e6 ? "£" + (n/1e6).toFixed(2).replace(/\.?0+$/, "") + "m" : "£" + Math.round(n/1000) + "k";
+const pct = (a, b) => (a && b) ? (a / b - 1) * 100 : null;
+const fmtPct = p => p == null ? "–" : (p > 0 ? "+" : p < 0 ? "−" : "") + Math.abs(p).toFixed(1) + "%";
+const UKD = new Intl.DateTimeFormat("en-GB", {timeZone: "Europe/London", day: "numeric", month: "short", year: "numeric"});
+const UKDT = new Intl.DateTimeFormat("en-GB", {timeZone: "Europe/London", day: "numeric", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit"});
+const MON = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+const monLabel = ym => MON[+ym.slice(5,7) - 1] + " " + ym.slice(0,4);
+const ymAdd = (ym, k) => { let y = +ym.slice(0,4), m = +ym.slice(5,7) - 1 + k; y += Math.floor(m/12); m = ((m % 12) + 12) % 12; return y + "-" + String(m+1).padStart(2,"0"); };
+const dateStr = n => { const s = String(n); return +s.slice(6,8) + " " + MON[+s.slice(4,6)-1] + " " + s.slice(0,4); };
+const TYPE = {D: "Detached", S: "Semi-detached", T: "Terraced", F: "Flat/maisonette", O: "Other"};
+const TEN = {F: "Freehold", L: "Leasehold", U: "Tenure unknown"};
+// the chosen place is kept in the page link (#p=...), so a reload or a bookmark shows the same place
+const keepPlace = p => history.replaceState(null, "", p ? "#p=" + encodeURIComponent(JSON.stringify({n: p.name, a: p.lat, o: p.lon, d: p.district, s: p.sector || null, t: p.street || null})) : location.pathname);
+function linkedPlace(){ const m = location.hash.match(/^#p=(.+)$/); if (!m) return null; try { const j = JSON.parse(decodeURIComponent(m[1])); return j && j.d ? {name: j.n, lat: +j.a, lon: +j.o, district: j.d, sector: j.s, street: j.t || undefined} : null; } catch (e) { return null; } }
+function miles(a, b, c, d){ const R = 3958.8, r = Math.PI/180, x = Math.sin((c-a)*r/2)**2 + Math.cos(a*r)*Math.cos(c*r)*Math.sin((d-b)*r/2)**2; return 2*R*Math.asin(Math.sqrt(x)); }
+const fmtMi = m => m < 0.1 ? "<0.1 mi" : m.toFixed(1) + " mi";
+
+let META, HPI, LA, DIST, S = {place: null, type: "a", range: 5, rad: 0.5, sort: "new", sType: "", show: 25, onlyStreet: false};
+const cache = {};
+function loadDistrict(d){ if (!cache[d]) cache[d] = fetch("data/d/" + encodeURIComponent(d) + ".json").then(r => { if (!r.ok) throw new Error("HTTP " + r.status); return r.json(); }).catch(e => { delete cache[d]; throw e; }); return cache[d]; }
+function msg(t, bad){ $("placeLine").className = "note" + (bad ? " err" : ""); $("placeLine").textContent = t; }
+
+// ---------- freshness ----------
+function freshness(){
+  const p = META.ppd, pub = new Date(p.published), built = new Date(META.built);
+  const ageDays = (Date.now() - pub) / 864e5, builtDays = (Date.now() - built) / 864e5;
+  let h = `Latest sale in the data: <b>${esc(UKD.format(new Date(p.latestSale)))}</b> (HM Land Registry monthly update published ${esc(UKD.format(pub))}). Area figures use the 12 months to <b>${esc(monLabel(p.complete))}</b>. Sales take a while to be registered, so recent counts are low and will rise.`;
+  const w = [];
+  if (ageDays > 45) w.push(`HM Land Registry's monthly update is ${Math.round(ageDays)} days old – their next release may be late.`);
+  if (builtDays > 3) w.push(`This page's daily refresh last ran ${esc(UKDT.format(built))} UK – the refresh may be failing, so figures could be out of date.`);
+  $("fresh").innerHTML = h + (w.length ? `<div class="warnbox">⚠ ${w.join(" ")}</div>` : "");
+  $("builtLine").textContent = `Data checked ${UKDT.format(built)} UK · Price Paid Data published ${UKD.format(pub)} · UK HPI to ${monLabel(HPI.latest.K02000001 ? HPI.latest.K02000001.date : META.hpi.month)} · Code-Point Open ${META.codepoint}`;
+}
+
+// ---------- area ----------
+function useStats(D){
+  // sector if it has enough sales, else district, else (city centres) the local authority
+  const sec = S.place.sector && D.sectors[S.place.sector];
+  if (sec && sec.cur.a[0] >= 30) return {s: sec, label: "postcode sector " + S.place.sector, sector: true};
+  if (D.stats.cur.a[0] >= 30 || !LA[D.la]) return {s: D.stats, label: "postcode district " + D.d, sector: false};
+  return {s: LA[D.la], label: LA[D.la].name + " (only " + D.stats.cur.a[0] + " sales in " + D.d + ")", sector: false, la: true};
+}
+function renderArea(D){
+  const u = useStats(D), c = u.s.cur, p = META.ppd;
+  $("areaTitle").textContent = `${D.d} · ${D.places.join(", ")}`;
+  $("areaBig").innerHTML = `<div><b>${gbp(c.a[1])}</b><span>typical price (median), ${esc(u.label)}</span></div><div><b>${gbp(c.a[2])}</b><span>average (mean)</span></div><div><b>${c.a[0].toLocaleString("en-GB")}</b><span>sales, 12 months to ${esc(monLabel(p.complete))}</span></div>`;
+  const sec = S.place.sector && D.sectors[S.place.sector];
+  const showSec = sec && sec.cur.a[0] >= 5 && !u.sector ? false : !!(sec && sec.cur.a[0] >= 5);
+  let h = `<tr><th>Type</th>${showSec ? `<th>${esc(S.place.sector)} median</th>` : ""}<th>${esc(D.d)} median</th><th>${esc(D.d)} average</th><th>${esc(D.d)} sales</th></tr>`;
+  for (const k of ["D","S","T","F"]) {
+    const x = D.stats.cur[k], y = sec && sec.cur[k];
+    h += `<tr><td>${TYPE[k]}</td>${showSec ? `<td>${y && y[0] >= 3 ? gbp(y[1]) + ` <small>(${y[0]})</small>` : "–"}</td>` : ""}<td>${x[0] >= 3 ? gbp(x[1]) : "–"}</td><td>${x[0] >= 3 ? gbp(x[2]) : "–"}</td><td>${x[0]}</td></tr>`;
+  }
+  const a = D.stats.cur.a;
+  h += `<tr><td><b>All types</b></td>${showSec ? `<td><b>${gbp(sec.cur.a[1])}</b> <small>(${sec.cur.a[0]})</small></td>` : ""}<td><b>${gbp(a[1])}</b></td><td><b>${gbp(a[2])}</b></td><td><b>${a[0]}</b></td></tr>`;
+  $("typeTable").innerHTML = h;
+  $("areaNote").textContent = `${D.laName ? D.laName + ", " : ""}${D.region || ""}. Standard sales only. "–" means fewer than 3 sales of that type.` + (u.sector ? "" : (S.place.sector ? ` Sector ${S.place.sector} had too few sales on its own, so the headline uses the whole district.` : ""));
+}
+
+// ---------- trend ----------
+function series(obj, key){ return obj && obj.series ? obj.series[key] : null; }
+function renderTrend(D){
+  const k = S.type, thin = D.stats.cur.a[0] < 30 && LA[D.la];
+  const st0 = thin ? LA[D.la] : D.stats, ago = st0.ago || {}, st = D.stats;
+  const old = $("secTrend"); if (old) old.remove();
+  const oldT = $("thinNote"); if (oldT) oldT.remove();
+  const name = k === "a" ? "all types" : TYPE[k].toLowerCase();
+  const cards = [1,3,5].map(y => {
+    const now = st0.cur[k], then = ago[y] && ago[y][k];
+    const ok = now && then && now[0] >= 10 && then[0] >= 10;
+    const p = ok ? pct(now[1], then[1]) : null;
+    return `<div><b class="${p > 0 ? "up" : p < 0 ? "down" : ""}">${fmtPct(p)}</b><span>${y} year${y > 1 ? "s" : ""}${ok ? `<br>${gbpK(then[1])} → ${gbpK(now[1])}` : "<br>too few sales"}</span></div>`;
+  });
+  $("chg").innerHTML = cards.join("");
+  const sec = S.place.sector && D.sectors[S.place.sector];
+  const secTxt = sec ? [1,3,5].map(y => { const a = sec.cur[k], b = sec.ago[y] && sec.ago[y][k]; return a && b && a[0] >= 20 && b[0] >= 20 ? `${y}y ${fmtPct(pct(a[1], b[1]))}` : null; }).filter(Boolean) : [];
+  window.__hp && (window.__hp.sectorTrend = secTxt);
+  if (secTxt.length) $("chg").insertAdjacentHTML("afterend", `<p class="note" id="secTrend" style="margin:-4px 0 8px">Sector ${esc(S.place.sector)} on its own: ${secTxt.join(" · ")} (median ${gbpK(sec.cur[k][1])}, ${sec.cur[k][0]} sales).</p>`);
+  const r = META.regions[D.region], ew = META.ew;
+  window.__hp && (window.__hp.trend = Object.fromEntries([1,3,5].map(y => [y, ago[y] && ago[y][k] && st0.cur[k][0] >= 10 && ago[y][k][0] >= 10 ? +pct(st0.cur[k][1], ago[y][k][1]).toFixed(1) : null])), window.__hp.trendBasis = thin ? LA[D.la].name : D.d);
+  if (!thin) $("chg").insertAdjacentHTML("beforebegin", `<p class="note" id="thinNote" style="margin:4px 0 0">Change in the typical price for district ${esc(D.d)} (${esc(name)}), 12 months to ${esc(monLabel(META.ppd.complete))} compared with the same 12 months before:</p>`);
+  if (thin) $("chg").insertAdjacentHTML("beforebegin", `<p class="note" id="thinNote" style="margin:4px 0 0">${esc(D.d)} has very few sales (${D.stats.cur.a[0]} in 12 months), so the changes below are for ${esc(LA[D.la].name)}.</p>`);
+  // chart: rolling 12-month medians, month ends from seriesStart .. complete
+  const start = META.ppd.seriesStart, n = st.series[k].length, from = Math.max(0, n - 1 - 12 * S.range);
+  const lines = [
+    {lab: D.d, col: "#13294b", w: 2.6, v: st.series[k].slice(from)},
+    {lab: D.region || "Region", col: "#c25e00", w: 1.8, dash: "6 4", v: r ? r.series[k].slice(from) : []},
+    {lab: "England & Wales", col: "#8a93a3", w: 1.8, dash: "2 3", v: ew.series[k].slice(from)}
+  ];
+  const all = lines.flatMap(l => l.v).filter(v => v != null);
+  if (!all.length) { $("chart").innerHTML = `<p class="note">Not enough ${esc(name)} sales to chart.</p>`; $("legend").innerHTML = ""; return; }
+  let lo = Math.min(...all), hi = Math.max(...all); const pad = (hi - lo) * 0.08 || hi * 0.05; lo -= pad; hi += pad;
+  const W = 600, H = 260, L = 52, R = 10, T = 10, B = 26, len = lines[0].v.length;
+  const x = i => L + (W - L - R) * (len > 1 ? i / (len - 1) : 0.5), y = v => T + (H - T - B) * (1 - (v - lo) / (hi - lo));
+  let svg = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Typical price trend chart">`;
+  const step = niceStep((hi - lo) / 4);
+  for (let g = Math.ceil(lo / step) * step; g <= hi; g += step) svg += `<line x1="${L}" x2="${W-R}" y1="${y(g)}" y2="${y(g)}" stroke="#e8ebf0"/><text x="${L-6}" y="${y(g)+4}" font-size="12" text-anchor="end" fill="#636b7a">${gbpK(g)}</text>`;
+  const firstYm = ymAdd(start, from);
+  for (let i = 0; i < len; i++) { const ym = ymAdd(firstYm, i); if (ym.endsWith("-01") || (len <= 14 && (i === 0 || i === len - 1))) svg += `<text x="${x(i)}" y="${H-8}" font-size="12" text-anchor="middle" fill="#636b7a">${len <= 14 ? MON[+ym.slice(5)-1] + " " : ""}${ym.slice(0,4)}</text><line x1="${x(i)}" x2="${x(i)}" y1="${H-B}" y2="${H-B+4}" stroke="#c5cbd5"/>`; }
+  for (const l of lines.slice().reverse()) {
+    let d = "", pen = false;
+    l.v.forEach((v, i) => { if (v == null) { pen = false; return; } d += (pen ? "L" : "M") + x(i).toFixed(1) + " " + y(v).toFixed(1); pen = true; });
+    if (d) svg += `<path d="${d}" fill="none" stroke="${l.col}" stroke-width="${l.w}" ${l.dash ? `stroke-dasharray="${l.dash}"` : ""} stroke-linejoin="round"/>`;
+  }
+  svg += "</svg>";
+  $("chart").innerHTML = svg;
+  $("legend").innerHTML = lines.map(l => `<span><i style="background:${l.col}"></i>${esc(l.lab)}</span>`).join("");
+  const lowN = st.series["n" + k].slice(from).some(c => c < 20);
+  $("trendNote").textContent = `Typical (median) price of ${name} over the previous 12 months, at each month end to ${monLabel(META.ppd.complete)}. Standard sales only.` + (lowN ? ` ${D.d} has fewer than 20 sales in some windows, so its line is rough.` : "");
+}
+function niceStep(x){ const p = Math.pow(10, Math.floor(Math.log10(x))), f = x / p; return (f < 1.5 ? 1 : f < 3.5 ? 2.5 : f < 7.5 ? 5 : 10) * p; }
+
+// ---------- compare ----------
+function renderCompare(D){
+  const k = S.type, name = k === "a" ? "all property types" : TYPE[k].toLowerCase() + " homes";
+  const la = LA[D.la], reg = META.regions[D.region], sec = S.place.sector && D.sectors[S.place.sector];
+  const rows = [];
+  if (sec && sec.cur[k][0] >= 10) rows.push({lab: "Sector " + S.place.sector, v: sec.cur[k][1], n: sec.cur[k][0], me: true});
+  const thin = D.stats.cur.a[0] < 30 && la;
+  rows.push({lab: "District " + D.d, v: D.stats.cur[k][0] >= 3 ? D.stats.cur[k][1] : null, n: D.stats.cur[k][0], me: !rows.length && !thin});
+  if (la) rows.push({lab: la.name, v: la.cur[k][1], n: la.cur[k][0], me: thin && !rows.some(r => r.me)});
+  if (reg) rows.push({lab: D.region, v: reg.cur[k][1], n: reg.cur[k][0]});
+  rows.push({lab: "England & Wales", v: META.ew.cur[k][1], n: META.ew.cur[k][0]});
+  const max = Math.max(...rows.map(r => r.v || 0));
+  $("cmpLead").textContent = `Typical (median) price of ${name}, 12 months to ${monLabel(META.ppd.complete)}, from the same sales data.`;
+  $("bars").innerHTML = rows.map(r => `<div class="bar${r.me ? " me" : ""}"><span class="lab" title="${esc(r.lab)}">${esc(r.lab)}</span><span class="trk"><span class="fill" style="display:block;width:${r.v ? (r.v / max * 100).toFixed(1) : 0}%"></span></span><span>${r.v ? gbp(r.v) : "–"}</span></div>`).join("");
+  const me = rows.find(r => r.me && r.v), cmp = [reg && {n: D.region, v: reg.cur[k][1]}, {n: "England & Wales", v: META.ew.cur[k][1]}].filter(Boolean);
+  $("cmpText").innerHTML = me ? cmp.map(c => { const p = pct(me.v, c.v); return `${esc(me.lab)} is <b class="${p >= 0 ? "" : ""}">${Math.abs(p).toFixed(0)}% ${p >= 0 ? "above" : "below"}</b> ${esc(c.n)}.`; }).join(" ") : "";
+  // UK HPI context (mix-adjusted averages; includes Scotland & NI for UK)
+  const H = HPI.latest, keyH = {a: "avg", D: "D", S: "S", T: "T", F: "F"}[k];
+  const regCode = Object.keys(H).find(c => c.startsWith("E12") && normReg(H[c].name) === normReg(D.region)) || (D.region === "Wales" ? "W92000004" : null);
+  const hl = [D.la && H[D.la] && {n: H[D.la].name, x: H[D.la]}, regCode && {n: H[regCode].name.replace(" Region", ""), x: H[regCode]}, H.K02000001 && {n: "United Kingdom", x: H.K02000001}].filter(Boolean);
+  $("hpiBox").innerHTML = hl.length ? `<b>UK House Price Index</b> average price${k === "a" ? "" : " (" + esc(TYPE[k].toLowerCase()) + ")"}, ${esc(monLabel(hl[0].x.date))} – a mix-adjusted official average, so it differs from the medians above:<br>` +
+    hl.map(h => `${esc(h.n)}: <b>${gbp(h.x[keyH])}</b>${k === "a" && h.x.ch12 != null ? ` (${fmtPct(h.x.ch12)} in a year)` : ""}`).join(" · ") + (hl.some(h => h.n === "United Kingdom") ? ". The UK figure includes Scotland and Northern Ireland." : "") : "";
+}
+const normReg = s => String(s || "").toLowerCase().replace(/ region$/, "").replace(/\s+/g, " ").trim();
+
+// ---------- sales ----------
+async function renderSales(){
+  const p = S.place, D = await loadDistrict(p.district);
+  // neighbouring districts within reach of the radius
+  const near = Object.entries(DIST.d).map(([d, v]) => [d, miles(p.lat, p.lon, v[0], v[1])]).filter(([d, m]) => d !== p.district && m < S.rad + 2.5).sort((a, b) => a[1] - b[1]).slice(0, 6).map(x => x[0]);
+  const docs = [D].concat((await Promise.all(near.map(d => loadDistrict(d).catch(() => null)))).filter(Boolean));
+  let rows = [], noLoc = 0;
+  for (const doc of docs) for (const s of doc.sales) {
+    const ll = doc.pcs[s[2]];
+    if (!ll) { if (doc === D) noLoc++; continue; }
+    const m = miles(p.lat, p.lon, ll[0], ll[1]);
+    if (m <= S.rad) rows.push({s, m});
+  }
+  const street = p.street ? p.street.toLowerCase() : null;
+  if (street && S.onlyStreet) rows = rows.filter(r => r.s[5].toLowerCase() === street);
+  if (S.sType) rows = rows.filter(r => r.s[8] === S.sType);
+  const sorts = {new: (a, b) => b.s[1] - a.s[1] || a.m - b.m, near: (a, b) => a.m - b.m || b.s[1] - a.s[1], hi: (a, b) => b.s[0] - a.s[0], lo: (a, b) => a.s[0] - b.s[0]};
+  rows.sort(sorts[S.sort]);
+  const prices = rows.map(r => r.s[0]).sort((a, b) => a - b);
+  const medR = prices.length ? prices[Math.floor((prices.length - 1) / 2)] : null;
+  $("salesTitle").textContent = street ? `Recent sales near ${p.street}` : "Recent sales nearby";
+  $("salesSum").innerHTML = rows.length
+    ? `<b>${rows.length}</b> sale${rows.length === 1 ? "" : "s"} within ${S.rad < 1 ? ({0.25: "¼", 0.5: "½"})[S.rad] : S.rad} mile${S.rad > 1 ? "s" : ""}${S.sType ? " (" + TYPE[S.sType].toLowerCase() + ")" : ""} since ${esc(dateStr(D.salesFrom.replace(/-/g, "")))} · middle price ${gbp(medR)}${D.salesCapped ? " · newest " + META.ppd.salesCap + " per district shown" : ""}`
+    : `No sales within this distance${S.sType ? " for this type" : ""} since ${esc(dateStr(D.salesFrom.replace(/-/g, "")))} – try a bigger distance.`;
+  const shown = rows.slice(0, S.show);
+  $("sales").innerHTML = shown.map(({s, m}) => {
+    const addr = [s[3], [s[4], s[5]].filter(Boolean).join(" "), s[6], s[7] !== s[6] ? s[7] : ""].filter(Boolean).join(", ");
+    const onSt = street && s[5].toLowerCase() === street;
+    return `<div class="sale"><div class="l"><div class="addr">${esc(addr)}, ${esc(s[2])}</div><div class="meta">${esc(dateStr(s[1]))}</div>
+      <span class="tag">${esc(TYPE[s[8]] || s[8])}</span><span class="tag${s[10] === "L" ? " lh" : ""}">${esc(TEN[s[10]] || s[10])}</span>${s[9] ? '<span class="tag new">New build</span>' : ""}${s[11] === "B" ? '<span class="tag b" title="Category B: e.g. repossession, buy-to-let or sale to a company – not used in the averages">Repossession/BTL/company sale</span>' : ""}${onSt ? '<span class="tag st">This street</span>' : ""}</div>
+      <div class="r"><b>${gbp(s[0])}</b><span class="note">${fmtMi(m)}</span></div></div>`;
+  }).join("");
+  $("moreSales").hidden = rows.length <= S.show; $("moreSales").textContent = `Show more (${rows.length - S.show} left)`;
+  window.__hp && Object.assign(window.__hp, {sales: rows.length, nearest: rows.slice(0, 3).map(r => ({p: r.s[0], d: r.s[1], a: r.s[4] + " " + r.s[5], pc: r.s[2], t: r.s[8], new: r.s[9], ten: r.s[10], mi: +r.m.toFixed(2)})), districtsLoaded: docs.map(d => d.d)});
+  // street-only toggle
+  const sb = $("sortBtns").querySelector("[data-street]");
+  if (street && !sb) { const b = document.createElement("button"); b.dataset.street = 1; b.textContent = "This street only"; b.onclick = () => { S.onlyStreet = !S.onlyStreet; b.classList.toggle("on", S.onlyStreet); S.show = 25; renderSales(); }; $("sortBtns").appendChild(b); }
+  if (!street && sb) sb.remove();
+}
+
+// ---------- render all ----------
+async function render(){
+  const p = S.place; if (!p) return;
+  let D;
+  try { D = await loadDistrict(p.district); } catch (e) { msg(`No sales data for ${p.district}.`, true); return; }
+  if (S.place !== p) return;
+  if (!D.stats) { msg(`Too few sales in ${p.district} for area figures.`, true); return; }
+  window.__hp = {place: p.name, district: D.d, sector: p.sector || null, median: D.stats.cur.a[1], mean: D.stats.cur.a[2], n: D.stats.cur.a[0]};
+  const u = useStats(D); window.__hp.headline = {label: u.label, median: u.s.cur.a[1], n: u.s.cur.a[0]};
+  $("results").hidden = false;
+  renderArea(D); renderTrend(D); renderCompare(D);
+  await renderSales();
+  window.__placeSeq = (window.__placeSeq || 0) + 1;
+}
+
+// ---------- place lookup ----------
+function setPlace(p, save){
+  S.place = p; S.show = 25; S.onlyStreet = false;
+  if (save) keepPlace(p);
+  showPlaceLine(); render();
+}
+function showPlaceLine(){
+  const p = S.place;
+  if (!p) { msg("Tap Near me, or type a postcode, street or town."); return; }
+  $("placeLine").className = "note";
+  $("placeLine").innerHTML = "Showing <b>" + esc(p.name) + "</b>" + (p.saved ? " (last used)" : "") + " <a href='#' id='clearPlace'>clear</a>";
+  $("clearPlace").onclick = e => { e.preventDefault(); keepPlace(null); S.place = null; $("results").hidden = true; showPlaceLine(); };
+}
+function nearestDistrict(lat, lon){ let best = null, bm = 1e9; for (const [d, v] of Object.entries(DIST.d)) { const m = miles(lat, lon, v[0], v[1]); if (m < bm && v[2] > 0) { bm = m; best = d; } } return best; }
+const NOT_EW = c => /Scotland|Northern Ireland|Isle of Man|Channel Islands/i.test(c || "");
+async function fromPoint(lat, lon, name, extra){
+  // nearest postcode -> its district and sector
+  let pc = null;
+  try { const j = await (await fetch(`https://api.postcodes.io/postcodes?lon=${lon}&lat=${lat}&limit=1&radius=1000`)).json(); pc = j.result && j.result[0]; } catch (e) {}
+  if (pc && NOT_EW(pc.country)) { msg(`That's in ${pc.country}. Sold prices here cover England and Wales only.`, true); return; }
+  const district = pc && DIST.d[pc.outcode] ? pc.outcode : nearestDistrict(lat, lon);
+  if (!district) { msg("No sales data near there.", true); return; }
+  const sector = pc && pc.outcode === district ? pc.postcode.slice(0, -2).trim() : null;
+  if (typeof name === "function") name = name(pc);
+  setPlace(Object.assign({name, lat, lon, district, sector}, extra || {}), true);
+}
+$("nearBtn").onclick = () => {
+  if (!navigator.geolocation) { msg("This browser can't share your location. Type a postcode instead.", true); return; }
+  msg("Finding your location…");
+  navigator.geolocation.getCurrentPosition(pos => {
+    const lat = +pos.coords.latitude.toFixed(5), lon = +pos.coords.longitude.toFixed(5);
+    fromPoint(lat, lon, pc => pc ? (pc.parish && !/unparished/i.test(pc.parish) ? pc.parish.replace(/ CP$/, "") + ", " : pc.admin_ward ? pc.admin_ward + ", " : "") + pc.postcode + " (your location)" : "your location");
+  }, e => msg((e.code === 1 ? "Location permission was refused" : "Couldn't get your location") + ". Type a postcode or town instead.", true),
+  {enableHighAccuracy: false, timeout: 15000, maximumAge: 0});
+};
+async function lookup(raw){
+  raw = raw.trim(); if (!raw) return;
+  const pc = raw.toUpperCase().replace(/\s+/g, "");
+  msg("Looking up " + raw + "…");
+  try {
+    if (/^[A-Z]{1,2}\d[A-Z\d]?\d[A-Z]{2}$/.test(pc)) {
+      let r = await fetch("https://api.postcodes.io/postcodes/" + pc), j = r.ok ? (await r.json()).result : null;
+      if (!j) { r = await fetch("https://api.postcodes.io/terminated_postcodes/" + pc); const t = r.ok ? (await r.json()).result : null; if (t) j = {postcode: t.postcode, latitude: t.latitude, longitude: t.longitude, outcode: t.postcode.split(" ")[0]}; }
+      if (j) {
+        if (NOT_EW(j.country)) { msg(`${j.postcode} is in ${j.country}. Sold prices here cover England and Wales only.`, true); return; }
+        const district = DIST.d[j.outcode] ? j.outcode : nearestDistrict(j.latitude, j.longitude);
+        setPlace({name: j.postcode + (j.parish && !/unparished/i.test(j.parish) ? " (" + j.parish.replace(/ CP$/, "") + ")" : j.admin_ward ? " (" + j.admin_ward + ")" : ""), lat: j.latitude, lon: j.longitude, district, sector: j.postcode.slice(0, -2).trim()}, true); return;
+      }
+      msg(`Couldn't find postcode ${raw}.`, true); return;
+    }
+    if (/^[A-Z]{1,2}\d[A-Z\d]?$/.test(pc)) {
+      const v = DIST.d[pc];
+      if (v) { setPlace({name: pc + " (" + v[4] + ")", lat: v[0], lon: v[1], district: pc, sector: null}, true); return; }
+      const r = await fetch("https://api.postcodes.io/outcodes/" + pc), j = r.ok ? (await r.json()).result : null;
+      if (j && NOT_EW((j.country || [])[0])) { msg(`${pc} is in ${j.country[0]}. Sold prices here cover England and Wales only.`, true); return; }
+      msg(`No sales data for ${pc}.`, true); return;
+    }
+    // town / village by name
+    const w = raw.toLowerCase();
+    try {
+      const r = await fetch("https://api.postcodes.io/places?limit=10&q=" + encodeURIComponent(raw));
+      if (r.ok) {
+        const x = ((await r.json()).result || []).find(p => [p.name_1, p.name_2].some(n => (n || "").toLowerCase() === w) && /^(Town|City|Village|Suburban Area|Hamlet|Other Settlement)/i.test(p.local_type || ""));
+        if (x) {
+          if (NOT_EW(x.country)) { msg(`${x.name_1} is in ${x.country}. Sold prices here cover England and Wales only.`, true); return; }
+          const area = x.county_unitary || x.region || "";
+          return fromPoint(x.latitude, x.longitude, x.name_1 + (area && area !== x.name_1 ? ", " + area : ""));
+        }
+      }
+    } catch (e) {}
+    // street (or anything else) via OpenStreetMap Nominatim, one request per search
+    const r = await fetch("https://nominatim.openstreetmap.org/search?format=jsonv2&countrycodes=gb&limit=1&addressdetails=1&accept-language=en-GB&q=" + encodeURIComponent(raw));
+    const j = r.ok ? await r.json() : [];
+    if (j && j[0]) {
+      const a = j[0].address || {}, road = a.road || (j[0].category === "highway" ? j[0].name : null);
+      const town = a.village || a.town || a.suburb || a.city || a.hamlet || "";
+      const nm = road ? road + (town ? ", " + town : "") : (j[0].name || raw) + (town && town !== j[0].name ? ", " + town : "");
+      return fromPoint(+j[0].lat, +j[0].lon, nm, road ? {street: road} : null);
+    }
+  } catch (e) { console.warn(e); }
+  msg(`Couldn't find "${raw}". Try a full postcode like WN8 7AA, a street with its town, or a town name.`, true);
+}
+$("placeGo").onclick = () => { $("placeInput").blur(); lookup($("placeInput").value); };
+$("placeInput").addEventListener("keydown", e => { if (e.key === "Enter") { e.target.blur(); lookup(e.target.value); } });
+
+// ---------- controls ----------
+function seg(id, items, key, after){
+  const box = $(id);
+  items.forEach(([v, lab]) => { const b = document.createElement("button"); b.type = "button"; b.textContent = lab; b.dataset.v = v; if (S[key] === v) b.className = "on";
+    b.onclick = () => { S[key] = v; [...box.querySelectorAll("button[data-v]")].forEach(x => x.classList.toggle("on", x === b)); after(); }; box.appendChild(b); });
+}
+const rerenderTop = async () => { const D = await loadDistrict(S.place.district); renderTrend(D); renderCompare(D); };
+seg("typeBtns", [["a","All"],["D","Detached"],["S","Semi"],["T","Terraced"],["F","Flat"]], "type", rerenderTop);
+seg("rangeBtns", [[1,"1 year"],[3,"3 years"],[5,"5 years"]], "range", rerenderTop);
+seg("radBtns", [[0.25,"¼ mi"],[0.5,"½ mi"],[1,"1 mi"],[2,"2 mi"]], "rad", () => { S.show = 25; renderSales(); });
+seg("sortBtns", [["new","Newest"],["near","Nearest"],["hi","Price ↓"],["lo","Price ↑"]], "sort", () => renderSales());
+seg("sTypeBtns", [["","All types"],["D","Detached"],["S","Semi"],["T","Terraced"],["F","Flat"]], "sType", () => { S.show = 25; renderSales(); });
+$("moreSales").onclick = () => { S.show += 50; renderSales(); };
+
+Promise.all(["meta", "hpi", "la", "districts"].map(n => fetch("data/" + n + ".json", {cache: "no-cache"}).then(r => { if (!r.ok) throw new Error(n + " HTTP " + r.status); return r.json(); })))
+.then(([m, h, l, d]) => {
+  META = m; HPI = h; LA = l; DIST = d;
+  freshness();
+  const saved = linkedPlace();
+  if (saved && saved.district && DIST.d[saved.district]) { saved.saved = true; setPlace(saved, false); } else showPlaceLine();
+}).catch(e => msg("Couldn't load the price data (" + e.message + "). Try again in a minute.", true));
+</script>
+</body>
+</html>

@@ -1,0 +1,77 @@
+name: Refresh house prices and publish
+
+on:
+  schedule:
+    # daily 06:20 UTC (07:20 UK summer time). HM Land Registry updates monthly; the daily run
+    # picks a new release up within a day and keeps the "checked" date current.
+    - cron: "20 6 * * *"
+  workflow_dispatch:
+  push:
+    branches: [main]
+
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install numpy
+        run: pip install --quiet numpy
+
+      - name: Check source versions
+        id: key
+        run: echo "key=$(python3 build.py --key)" >> "$GITHUB_OUTPUT"
+
+      # Re-use the ~1.2 GB of downloads while HM Land Registry's files are unchanged (no daily re-download)
+      - uses: actions/cache@v4
+        with:
+          path: cache
+          key: hmlr-${{ steps.key.outputs.key }}
+
+      - name: Build data (fails - and keeps the previous live site - if any source is missing)
+        env:
+          REUSE: "1"
+        run: python3 build.py
+
+      - name: Assemble site
+        run: |
+          rm -rf _site && cp -r site _site
+          touch _site/.nojekyll
+          du -sh _site; ls _site _site/data | head -20
+
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+      - id: deployment
+        uses: actions/deploy-pages@v4
+
+      # GitHub pauses scheduled workflows in repos with no commits for 60 days.
+      # A tiny commit every ~30 days keeps the daily refresh alive.
+      - name: Keep schedule alive
+        if: github.event_name == 'schedule'
+        run: |
+          last=$(git log -1 --format=%ct)
+          if [ $(( $(date +%s) - last )) -gt $(( 30*86400 )) ]; then
+            date -u +%FT%TZ > .keepalive
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git add .keepalive && git commit -m "keepalive" && git push
+          fi
